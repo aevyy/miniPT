@@ -6,7 +6,7 @@ The goal of this project is to reach maximum inference speed and support the new
 
 <br>
 
-![demo](https://github.com/user-attachments/assets/5a18f975-5e4e-407d-9a9b-10b6d2b42c1f)
+![demo2](https://github.com/user-attachments/assets/1711dc3e-9ab2-4f73-8c35-b7ac3aabec55)
 
 
 ## How it works
@@ -22,14 +22,12 @@ The model performs math on numbers, not strings. When you type a prompt like "Pa
 ### Transformer Loop
 We feed these IDs into the model one by one. The goal is to update a single vector, the `hidden_state`, as it passes through the network.
 
-* **Embedding:** We take the input token ID and look up its specific floating-point vector in the embedding table. This turns a simple integer into a dense vector representing the token's initial semantic meaning.
-* **Layers:** This state travels through 32 identical layers. In every layer, we first apply **RMSNorm** to stabilize the numbers. Then the state enters the **Attention** module. It projects the state into Query, Key, and Value vectors. The Query "looks back" at the Keys of previous tokens to find relevant information (Values). We apply **RoPE** (Rotary Positional Embeddings) so the model understands relative distance between words, then store the Key and Value in the **KV Cache**. This cache acts as the model's short-term memory, saving us from recalculating the history for every new word.
-* **MLP:** Finally, the state goes through the **Feedforward** module (a SwiGLU block). If Attention gathers context from the past, the MLP processes that information. It projects the vector to a higher dimension (14,336) to untangle complex relationships, applies a non-linear activation (SiLU), and projects it back down.
+* **Embedding:** We take the input `token ID`and look up its specific floating-point vector in the embedding table. This turns a simple integer into a dense vector representing the token's initial semantic meaning.
+* **Layers:** This state travels through 32 identical layers. In every layer, we first apply `RMSNorm` to stabilize the numbers. Then the state enters the `attention` module. It projects the state into `query`, `key`, and `value` vectors. The query "looks back" at the Keys of previous tokens to find relevant information (Values). We apply `RoPE` (Rotary Positional Embeddings) so the model understands relative distance between words, then store the Key and Value in the `KV Cache`. This cache acts as the model's short-term memory, saving us from recalculating the history for every new word.
+* **MLP:** Finally, the state goes through the `feedforward` module (a SwiGLU block). If Attention gathers context from the past, the MLP processes that information. It projects the vector to a higher dimension (14,336) to untangle complex relationships, applies a non-linear activation (SiLU), and projects it back down.
 
 ### Prediction
-After 32 layers of processing, the final `hidden_state` holds the "meaning" of the next predicted token. We project this vector against the entire vocabulary to get **logits** raw confidence scores for all 32,000 possible next tokens. We run a **softmax** operation to turn these scores into probabilities and **sample** the result (either choosing the most likely token or picking randomly based on the probability distribution). We decode that ID back into text, print it, and feed it back into the transformer.
-
-
+After 32 layers of processing, the final `hidden_state` holds the "meaning" of the next predicted token. We project this vector against the entire vocabulary to get **logits** raw confidence scores for all 32,000 possible next tokens. We run a `softmax` operation to turn these scores into probabilities and `sample` the result (either choosing the most likely token or picking randomly based on the probability distribution). We decode that ID back into text, print it, and feed it back into the transformer.
 
 
 # Running
