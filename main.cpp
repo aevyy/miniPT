@@ -44,18 +44,27 @@ uint32_t sample_multinomial(InferenceState& infer, float temp){
 
 // Update generate to use sampling
 template <typename T>
-uint32_t generate(Model<T>& model, InferenceState& infer, size_t token){
+uint32_t generate(Model<T>& model, InferenceState& infer, size_t token, float temp){
     model.forward(infer, token);
-    return sample_multinomial(infer, 0.0f);
+    return sample_multinomial(infer, temp);
 }
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <model_path> <prompt>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <model_path> <prompt> [temperature] [n_tokens]" << std::endl;
         return 1;
     }
 
     std::string model_path = argv[1];
+    float temperature = 0.0f;
+    int n_tokens = 50;
+
+    if (argc >= 4) {
+        temperature = std::stof(argv[3]);
+    }
+    if (argc >= 5) {
+        n_tokens = std::stoi(argv[4]);
+    }
 
     std::shared_ptr<Parameters> params = std::make_shared<Parameters>();
     params->load_parameters(model_path);
@@ -71,8 +80,8 @@ int main(int argc, char** argv) {
     }
 
     uint32_t t = got[got.size()-1];
-    for (int i = 0; i<50;i++){
-        t = generate(model, infer, t);
+    for (int i = 0; i<n_tokens;i++){
+        t = generate(model, infer, t, temperature);
         std::cout << params->tokenizer.decode({t}) << std::flush;
     }
 
