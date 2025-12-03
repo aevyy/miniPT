@@ -10,9 +10,9 @@ void matmul(Tensor<float>& xout, Tensor<float>& w, Tensor<float>& x){
     assert(x.numel == d && xout.numel >= n && "matmul shape mismatch");
 
     #pragma omp parallel for
-    for (int i=0; i<n; i++){
+    for (size_t i=0; i<n; i++){
         xout.data[i] = 0;
-        for (int j=0; j<d; j++){
+        for (size_t j=0; j<d; j++){
             xout.data[i] += w.data[i*d+j] * x.data[j];
         }
     }
@@ -24,9 +24,10 @@ void matmul(Tensor<float>& xout, Tensor<int8_t>& w, Tensor<float>& x){
 
     assert(x.numel == d && xout.numel >= n && "matmul shape mismatch");
 
-    for (int i=0; i<n; i++){
+    #pragma omp parallel for
+    for (size_t i=0; i<n; i++){
         xout.data[i] = 0;
-        for (int j=0; j<d; j++){
+        for (size_t j=0; j<d; j++){
             xout.data[i] += w.get(i*d+j) * x.data[j];
         }
     }
@@ -138,13 +139,13 @@ void mul(Tensor<float>& xout, Tensor<float>& x, float c) {
 
 void pow(Tensor<float>& xout, Tensor<float>& x, int e){
     for (int i=0; i<x.numel; i++){
-        xout.data[i] = pow(x.data[i], e);
+        xout.data[i] = std::pow(x.data[i], e);
     }
 }
 
 void sqrt(Tensor<float>& xout, Tensor<float>& x){
     for (int i=0; i<x.numel; i++){
-        xout.data[i] = sqrt(x.data[i]);
+        xout.data[i] = std::sqrt(x.data[i]);
     }
 }
 
